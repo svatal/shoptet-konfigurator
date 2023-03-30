@@ -7,24 +7,17 @@
       if (naMiru.length && document.querySelector("#add-note")) {
         document.querySelector("#add-note").click();
         let note = "";
-        const stored = getItemsFromLocalStorage();
         let notFound = [];
         naMiru.forEach((a) => {
           const name = a.innerText;
-          const sku = parseInt(
-            a.parentElement.parentElement.attributes["data-micro-sku"].value
-          );
-          const count = parseInt(
-            a.parentElement.parentElement.querySelector(".cart-item-amount")
-              .innerText
-          );
-          for (let i = 0; i < count; i++) {
-            if (note !== "") note += "\n----------------\n";
-            note += name + ":\n";
-            const storedProductText = stored[sku]?.pop()?.text;
-            if (!storedProductText) notFound.push(name);
-            note += storedProductText ?? getTextConfig(sku);
-          }
+          const sku =
+            a.parentElement.parentElement.attributes["data-micro-sku"].value;
+
+          if (note !== "") note += "\n----------------\n";
+          note += name + ":\n";
+          const storedProductText = localStorage.getItem(sku);
+          if (!storedProductText) notFound.push(name);
+          note += storedProductText ?? getTextConfig(sku.split("/")[0]);
         });
         const remark = document.querySelector("textarea#remark");
         remark.setAttribute("rows", 10);
@@ -57,7 +50,10 @@
       div.className = "variant-list";
       div.innerHTML = `<span class="variant-label">Váš výběr (viz popis níže)</span><textarea class="konfigurace" rows="8" cols="50">${text}</textarea>`;
       const variant = form.querySelector("select#parameter-id-36");
-      variant && selectVariant(variant, 4);
+      if (variant) {
+        selectVariant(variant, 15); // will be changed on submit, just to satisfy validation
+        variant.parentElement.parentElement.style.display = "none";
+      }
 
       form.insertBefore(div, form.querySelector(".p-price-wrapper"));
       form.addEventListener("submit", () => {
@@ -84,19 +80,6 @@
     return { localStorageId: prefix + c, c };
   }
 
-  function getItemsFromLocalStorage() {
-    /** @type {Record<string, {itemIdx: string, text: string}[]} */
-    const r = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      const text = localStorage.getItem(key);
-      const [productId, itemIdx] = key.split("/");
-      if (r[productId] === undefined) r[productId] = [];
-      r[productId].push({ itemIdx, text });
-    }
-    return r;
-  }
-
   function getTextConfig(id) {
     const c = config.get(id);
     if (!c) return null;
@@ -115,6 +98,7 @@
   const bDiteObleceni = "barva oblečení dítěte";
   const bTricko = "barva trička";
   const bKalhoty = "barva kalhot";
+  const ditePohlavi = "dítě (chlapeček/holčička)";
   const diteVek = "věk dítěte";
   const doplnek = "doplněk do rukou (nakupuje se zvlášť)";
   const uces = "typ účesu";
@@ -124,7 +108,7 @@
     [279, [bVlasky, bTop, bSukenky, doplnek]], // panenka zenskost
     [204, [uces, bVlasky, bSatickyHlavni, bSatickyDoplnkova, bKridla, doplnek]], // vila
     [180, [uces, bVlasky, bSatickyHlavni, bSatickyDoplnkova, doplnek]], // osobni panenka
-    [186, [bVlasky, bDiteVlasky, bDiteObleceni]], // andel strazny - holcicka/chlapecek
+    [186, [bVlasky, ditePohlavi, bDiteVlasky, bDiteObleceni]], // andel strazny
     [
       183,
       [
@@ -132,11 +116,23 @@
         bVlasky,
         bSatickyHlavni,
         bSatickyDoplnkova,
+        ditePohlavi,
         bDiteVlasky,
         bDiteObleceni,
       ],
-    ], // maminka s detatkem - holcicka / chlapecek
-    [267, [bVlasy, bTricko, bKalhoty, bDiteVlasky, bDiteObleceni, diteVek]], // tatinek s ditetem - holcicka / chlapecek
+    ], // maminka s detatkem
+    [
+      267,
+      [
+        bVlasy,
+        bTricko,
+        bKalhoty,
+        bDiteVlasky,
+        ditePohlavi,
+        bDiteObleceni,
+        diteVek,
+      ],
+    ], // tatinek s ditetem
   ]);
 
   function modifyThankYouPage() {
