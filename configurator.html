@@ -1,7 +1,4 @@
 <script>
-  appendConfiguratorOnProductPage();
-  appendNoteOnLastCheckoutStep();
-
   function appendNoteOnLastCheckoutStep() {
     setTimeout(() => {
       const naMiru = document.querySelectorAll(
@@ -13,16 +10,17 @@
         const stored = getItemsFromLocalStorage();
         naMiru.forEach((a) => {
           const name = a.innerText;
-          const sku =
-            +a.parentElement.parentElement.attributes["data-micro-sku"].value;
+          const sku = parseInt(
+            a.parentElement.parentElement.attributes["data-micro-sku"].value
+          );
           const count = parseInt(
             a.parentElement.parentElement.querySelector(".cart-item-amount")
               .innerText
           );
           for (let i = 0; i < count; i++) {
-            if (note !== "") note += "\n";
+            if (note !== "") note += "\n----------------\n";
             note += name + ":\n";
-            note += stored[sku]?.pop() ?? getTextConfig(sku);
+            note += stored[sku]?.shift().text ?? getTextConfig(sku);
           }
         });
         document.querySelector("#remark").value = note;
@@ -70,17 +68,53 @@
 
   function getTextConfig(id) {
     const c = config.get(id);
-      if (!c) return null;
-      return [...c, "Vaše poznámka"].map((line) => `${line}:`).join("\n");
+    if (!c) return null;
+    return [...c, "Vaše poznámka"].map((line) => `${line}: `).join("\n");
   }
 
   const bVlasky = "barva vlásků";
   const bSaticky = "barva šatiček";
   const bTop = "barva topu";
   const bSukenky = "barva sukénky";
+  const bSatickyHlavni = "barva šatiček - hlavní";
+  const bSatickyDoplnkova = "barva šatiček - doplňková";
+  const bKridla = "barva křídel";
+  const bDiteVlasky = "barva vlásků dítěte";
+  const bDiteObleceni = "barva oblečení dítěte";
+  const diteVek = "věk dítěte";
   const doplnek = "doplněk do rukou (nakupuje se zvlášť)";
+  const uces = "typ účesu";
+
   const config = new Map([
     [273, [bVlasky, bSaticky]], // drobnenka
     [279, [bVlasky, bTop, bSukenky, doplnek]], // panenka zenskost
+    [204, [uces, bVlasky, bSatickyHlavni, bSatickyDoplnkova, bKridla, doplnek]], // vila
+    [180, [uces, bVlasky, bSatickyHlavni, bSatickyDoplnkova, doplnek]], // osobni panenka
+    [186, [bVlasky, bDiteVlasky, bDiteObleceni]], // andel strazny - holcicka/chlapecek
+    [
+      183,
+      [
+        uces,
+        bVlasky,
+        bSatickyHlavni,
+        bSatickyDoplnkova,
+        bDiteVlasky,
+        bDiteObleceni,
+      ],
+    ], // maminka s detatkem - holcicka / chlapecek
+    [
+      267,
+      [
+        bVlasky,
+        bSatickyHlavni,
+        bSatickyDoplnkova,
+        bDiteVlasky,
+        bDiteObleceni,
+        diteVek,
+      ],
+    ], // tatinek s ditetem - holcicka / chlapecek
   ]);
+
+  appendConfiguratorOnProductPage();
+  appendNoteOnLastCheckoutStep();
 </script>
