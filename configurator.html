@@ -17,7 +17,7 @@
           note += name + ":\n";
           const storedProductText = localStorage.getItem(sku);
           if (!storedProductText) notFound.push(name);
-          note += storedProductText ?? getTextConfig(sku.split("/")[0]);
+          note += storedProductText ?? getTextConfig(+sku.split("/")[0]);
         });
         const remark = document.querySelector("textarea#remark");
         remark.setAttribute("rows", 10);
@@ -40,6 +40,7 @@
     }, 100);
   }
 
+  const maxVariantNumber = 15;
   function appendConfiguratorOnProductPage() {
     const form = document.querySelector("#product-detail-form");
     if (form !== null) {
@@ -51,13 +52,23 @@
       div.innerHTML = `<span class="variant-label">Váš výběr (viz popis níže)</span><textarea class="konfigurace" rows="8" cols="50">${text}</textarea>`;
       const variant = form.querySelector("select#parameter-id-36");
       if (variant) {
-        selectVariant(variant, 15); // will be changed on submit, just to satisfy validation
+        selectVariant(variant, maxVariantNumber); // will be changed on submit, just to satisfy validation
         variant.parentElement.parentElement.style.display = "none";
+      }
+      if (getFreeVersionCode(id.toString()).c > maxVariantNumber) {
+        form.querySelector(".add-to-cart").style.display = "none";
+        alert(
+          "Již máte v košíku příliš mnoho panenek tohoto typu. Pokud chcete nejakou vyměnit, nejdříve proveďte odebrání."
+        );
       }
 
       form.insertBefore(div, form.querySelector(".p-price-wrapper"));
-      form.addEventListener("submit", () => {
-        const free = getFreeLocalStorageId(id.toString());
+      form.addEventListener("submit", (e) => {
+        const free = getFreeVersionCode(id.toString());
+        if (free.c > maxVariantNumber) {
+          e.preventDefault();
+          return false;
+        }
         localStorage.setItem(
           free.localStorageId,
           form.querySelector(".konfigurace").value
@@ -73,10 +84,13 @@
   }
 
   /** @param prefix {string} */
-  function getFreeLocalStorageId(prefix) {
+  function getFreeVersionCode(prefix) {
     prefix += "/";
     let c = 1;
-    while (localStorage.getItem(prefix + c)) c++;
+    const usedCodes = new Set(
+      dataLayer[0].shoptet.cart.map((item) => item.code)
+    );
+    while (usedCodes.has(prefix + c)) c++;
     return { localStorageId: prefix + c, c };
   }
 
