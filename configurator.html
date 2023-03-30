@@ -8,6 +8,7 @@
         document.querySelector("#add-note").click();
         let note = "";
         const stored = getItemsFromLocalStorage();
+        let notFound = [];
         naMiru.forEach((a) => {
           const name = a.innerText;
           const sku = parseInt(
@@ -20,7 +21,9 @@
           for (let i = 0; i < count; i++) {
             if (note !== "") note += "\n----------------\n";
             note += name + ":\n";
-            note += stored[sku]?.pop()?.text ?? getTextConfig(sku);
+            const storedProductText = stored[sku]?.pop()?.text;
+            if (!storedProductText) notFound.push(name);
+            note += storedProductText ?? getTextConfig(sku);
           }
         });
         const remark = document.querySelector("textarea#remark");
@@ -29,6 +32,14 @@
         remark.style.maxWidth = "600px";
         remark.style.height = "300px";
         remark.value = note;
+        if (notFound.length)
+          alert(
+            `Ke zboží ${notFound
+              .map((name) => `"${name}"`)
+              .join(
+                ", "
+              )} se nepovedlo najít Váš výběr. Prosím, doplňte jej v poznámce.`
+          );
         document
           .querySelector("form#order-form")
           .addEventListener("submit", () => localStorage.clear());
