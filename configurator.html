@@ -127,6 +127,14 @@
     [267, [bVlasy, bTricko, bKalhoty, bDiteVlasky, bDiteObleceni, diteVek]], // tatinek s ditetem - holcicka / chlapecek
   ]);
 
+  function modifyThankYouPage() {
+    const recap = document.querySelector(".recapitulation-table-payment");
+    if (!recap) return;
+    recap.style.display = "none";
+    recap.parentElement.innerHTML = `<div>Objednávku zatím neplaťte. Překontroluji ji a brzy se Vám ozvu s jejím potvrzením a s doplňujícími informacemi.</div>`;
+  }
+
   appendConfiguratorOnProductPage();
   appendNoteOnLastCheckoutStep();
+  modifyThankYouPage();
 </script>
