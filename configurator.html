@@ -1,0 +1,86 @@
+<script>
+  appendConfiguratorOnProductPage();
+  appendNoteOnLastCheckoutStep();
+
+  function appendNoteOnLastCheckoutStep() {
+    setTimeout(() => {
+      const naMiru = document.querySelectorAll(
+        '.cart-item a[href$="-na-miru/"]'
+      );
+      if (naMiru.length && document.querySelector("#add-note")) {
+        document.querySelector("#add-note").click();
+        let note = "";
+        const stored = getItemsFromLocalStorage();
+        naMiru.forEach((a) => {
+          const name = a.innerText;
+          const sku =
+            +a.parentElement.parentElement.attributes["data-micro-sku"].value;
+          const count = parseInt(
+            a.parentElement.parentElement.querySelector(".cart-item-amount")
+              .innerText
+          );
+          for (let i = 0; i < count; i++) {
+            if (note !== "") note += "\n";
+            note += name + ":\n";
+            note += stored[sku]?.pop() ?? getTextConfig(sku);
+          }
+        });
+        document.querySelector("#remark").value = note;
+      }
+    }, 100);
+  }
+
+  function appendConfiguratorOnProductPage() {
+    const form = document.querySelector("#product-detail-form");
+    if (form !== null) {
+      const id = +form.querySelector('input[name="productId"]').value;
+      const text = getTextConfig(id);
+      if (!text) return;
+      const div = document.createElement("div");
+      div.className = "variant-list";
+      div.innerHTML = `<span class="variant-label">Konfigurace</span><textarea class="konfigurace" rows="8" cols="50">${text}</textarea>`;
+      form.insertBefore(div, form.querySelector(".p-price-wrapper"));
+      form.addEventListener("submit", () => {
+        const lsId = getFreeLocalStorageId(id.toString());
+        localStorage.setItem(lsId, form.querySelector(".konfigurace").value);
+      });
+    }
+  }
+
+  /** @param prefix {string} */
+  function getFreeLocalStorageId(prefix) {
+    prefix += "-";
+    let c = 1;
+    while (localStorage.getItem(prefix + c)) c++;
+    return prefix + c;
+  }
+
+  function getItemsFromLocalStorage() {
+    /** @type {Record<string, {itemIdx: string, text: string}[]} */
+    const r = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      const text = localStorage.getItem(key);
+      const [productId, itemIdx] = key.split("-");
+      if (r[productId] === undefined) r[productId] = [];
+      r[productId].push({ itemIdx, text });
+    }
+    return r;
+  }
+
+  function getTextConfig(id) {
+    const c = config.get(id);
+      if (!c) return null;
+      return [...c, "Vaše poznámka"].map((line) => `${line}:`).join("\n");
+  }
+
+  const bVlasky = "barva vlásků";
+  const bSaticky = "barva šatiček";
+  const bTop = "barva topu";
+  const bSukenky = "barva sukénky";
+  const doplnek = "doplněk do rukou (nakupuje se zvlášť)";
+  const config = new Map([
+    [273, [bVlasky, bSaticky]], // drobnenka
+    [279, [bVlasky, bTop, bSukenky, doplnek]], // panenka zenskost
+  ]);
+</script>
