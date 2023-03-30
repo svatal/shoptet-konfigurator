@@ -20,10 +20,18 @@
           for (let i = 0; i < count; i++) {
             if (note !== "") note += "\n----------------\n";
             note += name + ":\n";
-            note += stored[sku]?.shift().text ?? getTextConfig(sku);
+            note += stored[sku]?.pop()?.text ?? getTextConfig(sku);
           }
         });
-        document.querySelector("#remark").value = note;
+        const remark = document.querySelector("textarea#remark");
+        remark.setAttribute("rows", 10);
+        remark.setAttribute("cols", 50);
+        remark.style.maxWidth = "600px";
+        remark.style.height = "300px";
+        remark.value = note;
+        document
+          .querySelector("form#order-form")
+          .addEventListener("submit", () => localStorage.clear());
       }
     }, 100);
   }
@@ -36,7 +44,7 @@
       if (!text) return;
       const div = document.createElement("div");
       div.className = "variant-list";
-      div.innerHTML = `<span class="variant-label">Konfigurace</span><textarea class="konfigurace" rows="8" cols="50">${text}</textarea>`;
+      div.innerHTML = `<span class="variant-label">Váš výběr (viz popis níže)</span><textarea class="konfigurace" rows="8" cols="50">${text}</textarea>`;
       form.insertBefore(div, form.querySelector(".p-price-wrapper"));
       form.addEventListener("submit", () => {
         const lsId = getFreeLocalStorageId(id.toString());
@@ -73,14 +81,17 @@
   }
 
   const bVlasky = "barva vlásků";
+  const bVlasy = "barva vlasů";
   const bSaticky = "barva šatiček";
   const bTop = "barva topu";
   const bSukenky = "barva sukénky";
   const bSatickyHlavni = "barva šatiček - hlavní";
   const bSatickyDoplnkova = "barva šatiček - doplňková";
-  const bKridla = "barva křídel";
+  const bKridla = "barva křídel - doplňková k bílé";
   const bDiteVlasky = "barva vlásků dítěte";
   const bDiteObleceni = "barva oblečení dítěte";
+  const bTricko = "barva trička";
+  const bKalhoty = "barva kalhot";
   const diteVek = "věk dítěte";
   const doplnek = "doplněk do rukou (nakupuje se zvlášť)";
   const uces = "typ účesu";
@@ -102,17 +113,7 @@
         bDiteObleceni,
       ],
     ], // maminka s detatkem - holcicka / chlapecek
-    [
-      267,
-      [
-        bVlasky,
-        bSatickyHlavni,
-        bSatickyDoplnkova,
-        bDiteVlasky,
-        bDiteObleceni,
-        diteVek,
-      ],
-    ], // tatinek s ditetem - holcicka / chlapecek
+    [267, [bVlasy, bTricko, bKalhoty, bDiteVlasky, bDiteObleceni, diteVek]], // tatinek s ditetem - holcicka / chlapecek
   ]);
 
   appendConfiguratorOnProductPage();
