@@ -56,20 +56,32 @@
       const div = document.createElement("div");
       div.className = "variant-list";
       div.innerHTML = `<span class="variant-label">Váš výběr (viz popis níže)</span><textarea class="konfigurace" rows="8" cols="50">${text}</textarea>`;
+      const variant = form.querySelector("select#parameter-id-36");
+      variant && selectVariant(variant, 4);
+
       form.insertBefore(div, form.querySelector(".p-price-wrapper"));
       form.addEventListener("submit", () => {
-        const lsId = getFreeLocalStorageId(id.toString());
-        localStorage.setItem(lsId, form.querySelector(".konfigurace").value);
+        const free = getFreeLocalStorageId(id.toString());
+        localStorage.setItem(
+          free.localStorageId,
+          form.querySelector(".konfigurace").value
+        );
+        variant && selectVariant(variant, free.c);
       });
     }
   }
 
+  function selectVariant(select, idx) {
+    // select.querySelector(`option[text="${label}"]`)
+    select.value = document.querySelector(`option[data-index="${idx}"]`).value;
+  }
+
   /** @param prefix {string} */
   function getFreeLocalStorageId(prefix) {
-    prefix += "-";
+    prefix += "/";
     let c = 1;
     while (localStorage.getItem(prefix + c)) c++;
-    return prefix + c;
+    return { localStorageId: prefix + c, c };
   }
 
   function getItemsFromLocalStorage() {
@@ -78,7 +90,7 @@
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       const text = localStorage.getItem(key);
-      const [productId, itemIdx] = key.split("-");
+      const [productId, itemIdx] = key.split("/");
       if (r[productId] === undefined) r[productId] = [];
       r[productId].push({ itemIdx, text });
     }
