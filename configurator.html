@@ -156,7 +156,36 @@
     recap.parentElement.innerHTML = `<div>Objednávku zatím neplaťte. Překontroluji ji a brzy se Vám ozvu s jejím potvrzením a s doplňujícími informacemi.</div>`;
   }
 
+  function addEshopMenuItem() {
+    const categories = document.querySelectorAll("li.appended-category");
+    const first = categories.item(0);
+    const parent = first.parentElement;
+    const cloned = first.cloneNode(true);
+    cloned.classList.remove("appended-category");
+    cloned.classList.add("ext");
+    cloned.querySelector("b").innerText = "E-shop";
+    const arrow = document.createElement("span");
+    arrow.classList.add("submenu-arrow");
+    cloned.querySelector("a").append(arrow);
+
+    const submenu = document.createElement("ul");
+    submenu.classList.add("menu-level-2");
+    categories.forEach((category) => {
+      category.className = "";
+      const div = document.createElement("div");
+      const a = category.querySelector("a");
+      a.innerHTML = `<span>${a.querySelector("b").innerHTML}</span>`;
+      div.append(a);
+      category.append(div);
+      submenu.append(category);
+    });
+
+    cloned.append(submenu);
+    parent.prepend(cloned);
+  }
+
   appendConfiguratorOnProductPage();
   appendNoteOnLastCheckoutStep();
   modifyThankYouPage();
+  addEshopMenuItem();
 </script>
